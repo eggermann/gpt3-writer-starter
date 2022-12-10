@@ -33,7 +33,7 @@ const _ = {
             model: 'text-davinci-003',
             prompt: `${text}`,
             temperature: 0.7,
-            max_tokens: 120,
+            max_tokens: 250,
         });
 
         const output = baseCompletion.data.choices[0].text
@@ -118,15 +118,13 @@ const Home = () => {
                     </div>
                     <div className="header-subtitle">
                         <h2>
-                            Play the game of human,
-                            and come in touch with a Bot or Not ?
+                            Play the game of human or bot,
+                            and come in touch with a Bot or Not !
                         </h2>
                     </div>
                 </div>
 
-
                 <div className="prompt">
-
                     <div className="prompt__item">
                         {apiOutput && (
                             <div className="output">
@@ -171,7 +169,6 @@ const Home = () => {
                     </div>
                 </a>
             </div>
-
         </div>
     );
 };
