@@ -1,0 +1,55 @@
+.badge--logo {
+  img {
+    height: 40vh;
+    width: auto;
+  }
+
+}
+
+$md: 720px;
+.generate-button__label {
+  min-width: max-content;
+}
+
+.prompt {
+  display: inline;
+
+  @media screen and (min-width: $md) {
+    grid-template-columns: 60% 36%;
+  }
+
+  align-items: flex-start;
+
+  justify-content: space-between;
+
+  textarea:focus {
+    filter: brightness(2);
+  }
+
+  textarea:focus ~ {
+    opacity: .3;
+
+  }
+
+  &__hint {
+    font-size: .7rem;
+    color: rgba(255, 255, 255, .4);
+  }
+
+  &__item {
+    display: grid;
+    grid-gap: 2em;
+
+    &:nth-of-type(2) {
+      @media screen and (min-width: $md) {
+        width: max-content;
+      }
+
+    }
+
+  }
+
+  .output-content p {
+    white-space: inherit;
+  }
+}
