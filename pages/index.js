@@ -24,6 +24,7 @@ const actBot = {
 };
 
 const _ = {
+    speechSynthesis: null,
     totalText: '',
     firstTime: true,
     prompt: async (setIsGenerating, isGenerating, text, setApiOutput) => {
@@ -42,11 +43,24 @@ const _ = {
         setApiOutput(`${output}`);
         setIsGenerating(false);
 
-        _.totalText += text + ' ' + output;
+
+        _.totalText = text + ' ' + output;
         console.log('---->totalText : ', _.totalText)
         return output;
+    },
+
+    speech: (output) => {
+        const voices = speechSynthesis.getVoices();
+
+        _.speechSynthesis = new SpeechSynthesisUtterance(output);
+        if ( voices.length !== 0 && gender == 'female') {
+           // _.speechSynthesis.voice = voices[0];
+        }
+        speechSynthesis &&    speechSynthesis.cancel()
+        _.speechSynthesis.lang = 'en-US';
+        speechSynthesis.speak(_.speechSynthesis);
     }
-}
+};
 
 
 const Home = () => {
@@ -58,7 +72,6 @@ const Home = () => {
 
 
     const callGenerateEndpoint = async () => {
-
         console.log("Calling OpenAI...>", userInput);
 
         console.log(`API: ${userInput}`)
@@ -66,11 +79,11 @@ const Home = () => {
         const initText = _.totalText
             + '\n Human:' + userInput
             + ' \n DateABotOrNot:' + actBot.name + ': ';
+
         const output = await _.prompt(setIsGenerating, isGenerating, initText, setApiOutput);
 
-    }
-
-
+        _.speech(output)
+    };
     const onUserChangedText = (event) => {
         setUserInput(event.target.value);
     };
@@ -79,9 +92,8 @@ const Home = () => {
         _.firstTime && (async () => {
             _.firstTime = false;
 
-            const initText = text.init + actBot.name + ' ';
+            const initText = text.init(actBot.name)  + ' ';
             //
-
             const resp = false
                 ? (() => {
                     const output = 'I\'m Terrence Zieme, a 27 year old artist from the United Kingdom. I\'m a creative person who loves to express myself through my art. I\'m also an avid music lover, and I spend a lot of my free time finding new music to listen to. I\'m a bit of a foodie, and I\'m always up for trying new dishes. I\'m also a bit of a fitness enthusiast, and I enjoy going to the gym and taking part in outdoor activities. Phy'
@@ -96,7 +108,6 @@ const Home = () => {
     });
 
 
-
     return (
         <div className="root">
             <Head>
@@ -105,22 +116,23 @@ const Home = () => {
             <div className="container">
                 <div className="header">
                     <div className="header-title">
+                        <div className="badge--logo">
+                            <Image src={dateABotOrNot} alt="dateABotOrNot logo"/>
+                        </div>
 
 
-                        <h1>
-                            <div className="badge--logo">
-                                <Image src={dateABotOrNot} alt="dateABotOrNot logo"/>
-                            </div>
-
-                            Date a Bot or Not
-
-                        </h1>
                     </div>
+
+
+                    <h1>
+                        Date a Bot or Not
+                    </h1>
                     <div className="header-subtitle">
-                        <h2>
-                            Play the game of human or bot,
-                            and come in touch with a Bot or Not !
-                        </h2>
+                        <div className="output-header">
+                            <h2>
+                                get in touch with DateABotOrNot {actBot.name}
+                            </h2>
+                        </div>
                     </div>
                 </div>
 
@@ -128,11 +140,6 @@ const Home = () => {
                     <div className="prompt__item">
                         {apiOutput && (
                             <div className="output">
-                                <div className="output-header-container">
-                                    <div className="output-header">
-                                        <h3> {actBot.name} :</h3>
-                                    </div>
-                                </div>
                                 <div className="output-content">
                                     <p dangerouslySetInnerHTML={{__html: apiOutput}}></p>
                                 </div>
