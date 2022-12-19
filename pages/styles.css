@@ -32,10 +32,10 @@ body {
     padding: 50px;
     position: relative;
     width: auto;
-    gap: 64px;
+    gap: 1em;
 }
 
-.header {    
+.header {
     display: flex;
     flex-direction: column;
     width: 100%;
