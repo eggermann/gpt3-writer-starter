@@ -5,13 +5,11 @@ import dateABotOrNot from '../assets/dbn/output-2.jpg';
 const {faker} = require('@faker-js/faker');
 import {useState, useEffect} from 'react';
 import {Configuration, OpenAIApi} from 'openai';
-//import tm from './lib/tm/taktMusterCurve.js'
 import text from './lib/text.js';
 import buildspaceLogo from "../assets/buildspace-logo.png";
 
-
 const configuration = new Configuration({
-    apiKey: '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'// process.env.OPENAI_API_KEY,
+    apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY
 });
 const openai = new OpenAIApi(configuration);
 
@@ -44,6 +42,7 @@ const _ = {
         setIsGenerating(false);
 
 
+
         _.totalText = text + ' ' + output;
         console.log('---->totalText : ', _.totalText)
         return output;
@@ -61,6 +60,7 @@ const _ = {
         speechSynthesis.speak(_.speechSynthesis);
     }
 };
+
 
 
 const Home = () => {
