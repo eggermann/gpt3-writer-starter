@@ -5,7 +5,7 @@ import dateABotOrNot from '../assets/dbn/output-2.jpg';
 const {faker} = require('@faker-js/faker');
 import {useState, useEffect} from 'react';
 import {Configuration, OpenAIApi} from 'openai';
-import text from './lib/text.js';
+import text from './api/text.js';
 import buildspaceLogo from "../assets/buildspace-logo.png";
 
 const configuration = new Configuration({
