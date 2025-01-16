@@ -115,6 +115,10 @@ body {
 
 textarea {
     font-family: 'Manrope', sans-serif;
+    width:100% !important;
+    background-color: aliceblue!important;
+    color:black!important;
+    font-size: 1.5rem!important;
 }
 
 
@@ -318,6 +322,8 @@ textarea {
     justify-content: flex-start;
     flex-shrink: 0;
     transform: none;
+    font-size: 50px;
+
 }
 
 .output-content p {
