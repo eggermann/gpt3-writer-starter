@@ -1,167 +1,171 @@
 import Head from 'next/head';
-import Image from 'next/image';
-import dateABotOrNot from '../assets/dbn/output-2.jpg';
+import AuthView from '../components/AuthView';
+import ProfileSetup from '../components/ProfileSetup';
+import Topbar from '../components/Topbar';
+import ProfilePanel from '../components/ProfilePanel';
+import MatchesPanel from '../components/MatchesPanel';
+import DatePanel from '../components/DatePanel';
+import AgeGateModal from '../components/AgeGateModal';
+import ReportModal from '../components/ReportModal';
+import { useDatingApp } from '../hooks/useDatingApp';
 
-const {faker} = require('@faker-js/faker');
-import {useState, useEffect} from 'react';
-import buildspaceLogo from "../assets/buildspace-logo.png";
+export default function Home() {
+  const app = useDatingApp();
 
-let gender = Math.random() < 0.5 ? 'female' : 'male',
-    firstName = faker.name.firstName(gender),
-    lastName = faker.name.lastName(gender)
+  const modals = (
+    <>
+      <ReportModal
+        reportTarget={app.reportTarget}
+        reportReason={app.reportReason}
+        reportReasons={app.constants.reportReasons}
+        reportNotes={app.reportNotes}
+        onChangeReason={app.actions.setReportReason}
+        onChangeNotes={app.actions.setReportNotes}
+        onCancel={() => app.actions.setReportTarget(null)}
+        onReport={() => app.actions.submitReport(false)}
+        onReportBlock={() => app.actions.submitReport(true)}
+      />
+      <AgeGateModal
+        open={app.ageGateOpen}
+        checked={app.ageGateChecked}
+        error={app.ageGateError}
+        onToggle={app.actions.handleAgeGateToggle}
+        onConfirm={app.actions.handleAgeGateConfirm}
+      />
+    </>
+  );
 
-const actBot = {
-    name: firstName + ' ' + lastName
-};
-
-const _ = {
-    speechSynthesis: null,
-    totalText: '',
-    firstTime: true,
-    prompt: async (setIsGenerating, isGenerating, text, setApiOutput) => {
-        setIsGenerating(true);
-
-        const response = await fetch('/api/generate', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ userInput: text }),
-        });
-
-        const data = await response.json();
-        const output = data && data.output;
-
-        console.log("API replied...", output)
-
-        setApiOutput(`${output}`);
-        setIsGenerating(false);
-
-        _.totalText = text + ' ' + output;
-        console.log('---->totalText : ', _.totalText)
-        return output;
-    },
-
-    speech: (output) => {
-        const voices = speechSynthesis.getVoices();
-
-        _.speechSynthesis = new SpeechSynthesisUtterance(output);
-        if ( voices.length !== 0 && gender == 'female') {
-           // _.speechSynthesis.voice = voices[0];
-        }
-        speechSynthesis &&    speechSynthesis.cancel()
-        _.speechSynthesis.lang = 'en-US';
-        speechSynthesis.speak(_.speechSynthesis);
-    }
-};
-
-
-
-const Home = () => {
-    const bots = [{}, {}]
-
-    const [userInput, setUserInput] = useState('');
-    const [apiOutput, setApiOutput] = useState('');
-    const [isGenerating, setIsGenerating] = useState(false);
-
-
-    const callGenerateEndpoint = async () => {
-        console.log("Calling OpenAI...>", userInput);
-
-        console.log(`API: ${userInput}`)
-
-        const initText = _.totalText
-            + '\\n Human:' + userInput
-            + ' \\n DateABotOrNot:' + actBot.name + ': ';
-
-        const output = await _.prompt(setIsGenerating, isGenerating, initText, setApiOutput);
-
-        _.speech(output)
-    };
-    const onUserChangedText = (event) => {
-        setUserInput(event.target.value);
-    };
-
-    useEffect(() => {
-        _.firstTime && (async () => {
-            _.firstTime = false;
-
-            const initText =  'Hello, how can I help you today?';
-
-            
-            await _.prompt(setIsGenerating, isGenerating, initText, setApiOutput);
-
-        })()
-    }, []);
-
-
+  if (app.mode === 'checking') {
     return (
-        <div className="root">
-            <Head>
-                <title>dateABotOrNot | eggman </title>
-            </Head>
-            <div className="container">
-                <div className="header">
-                    <div className="header-title">
-                        <div className="badge--logo">
-                            <Image src={dateABotOrNot} alt="dateABotOrNot logo"/>
-                        </div>
-                    </div>
-                    <h1>
-                        Date a Bot or Not
-                    </h1>
-                    <div className="header-subtitle">
-                        <div className="output-header">
-                            <h2>
-                                get in touch with {actBot.name}
-                            </h2>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="prompt">
-                    <div className="prompt__item">
-                        {apiOutput && (
-                            <div className="output">
-                                <div className="output-content">
-                                    <p dangerouslySetInnerHTML={{__html: apiOutput}}></p>
-                                </div>
-                            </div>
-                        )}
-                    </div>
-                    <div className="prompt__item">
-                        <div className="prompt__text-container">
-                            <textarea titel="talk width {actBot.name} " placeholder="&#128148;..."
-                                      className="prompt-box" value={userInput}
-                                      onChange={onUserChangedText}
-                                      onKeyPress={(ev) => {
-                                          if (ev.key === 'Enter') {
-                                              callGenerateEndpoint();
-                                              setUserInput('');
-                                              ev.preventDefault();
-                                          }
-                                      }}/>
-                            <i className="prompt__hint">hit enter to send send {actBot.name} ❤️</i>
-                        </div>
-                    </div>
-                </div>
-                <br/><br/><br/><br/><br/>
-            </div>
-
-            <div className="badge-container grow">
-                <a
-                    href="https://buildspace.so/builds/ai-writer"
-                    target="_blank"
-                    rel="noreferrer"
-                >
-                    <div className="badge">
-                        <Image src={buildspaceLogo} alt="buildspace logo"/>
-                        <p>thanks to buildspace for guiding</p>
-                    </div>
-                </a>
-            </div>
-        </div>
+      <div className="page">
+        <Head>
+          <title>Date a Bot or Not</title>
+        </Head>
+        <div className="loading-state">Booting the lab…</div>
+        {modals}
+      </div>
     );
-};
+  }
 
-export default Home;
+  if (app.mode === 'auth') {
+    return (
+      <div className="page">
+        <Head>
+          <title>Date a Bot or Not</title>
+        </Head>
+        <AuthView
+          authForm={app.authForm}
+          authError={app.authError}
+          authMessage={app.authMessage}
+          onChange={app.actions.handleAuthChange}
+          onSignIn={app.actions.handleSignIn}
+          onSignUp={app.actions.handleSignUp}
+          onDemo={app.actions.enterDemoMode}
+          isSupabaseConfigured={app.flags.isSupabaseConfigured}
+        />
+        {modals}
+      </div>
+    );
+  }
+
+  if (app.needsProfile) {
+    return (
+      <div className="page">
+        <Head>
+          <title>Date a Bot or Not</title>
+        </Head>
+        <ProfileSetup
+          profileDraft={app.profileDraft}
+          onChange={app.actions.handleProfileDraft}
+          onSave={app.actions.handleProfileSave}
+          isBusy={app.isBusy}
+          authError={app.authError}
+        />
+        {modals}
+      </div>
+    );
+  }
+
+  return (
+    <div className="page">
+      <Head>
+        <title>Date a Bot or Not</title>
+      </Head>
+
+      <Topbar mode={app.mode} onSignOut={app.actions.handleSignOut} />
+
+      <main className="grid">
+        <ProfilePanel
+          profile={app.profile}
+          discover={app.discover}
+          discoverRatings={app.discoverRatings}
+          trackedDiscoverIds={app.trackedDiscoverIds}
+          avatarSourceName={app.avatarSourceName}
+          isUsingExternalAvatarSource={app.isUsingExternalAvatarSource}
+          avatarProvider={app.avatarProvider}
+          geminiApiKey={app.geminiApiKey}
+          openaiApiKey={app.openaiApiKey}
+          avatarPrompt={app.avatarPrompt}
+          avatarInterview={app.avatarInterview}
+          avatarError={app.avatarError}
+          avatarStatus={app.avatarStatus}
+          isAvatarBusy={app.isAvatarBusy}
+          onFlirt={app.actions.handleFlirt}
+          onPass={app.actions.handlePass}
+          onBlock={app.actions.handleBlock}
+          onRateDiscover={app.actions.rateDiscoverEntry}
+          onToggleTrackDiscover={app.actions.toggleTrackDiscover}
+          onUseProfileDataForAvatar={app.actions.handleUseProfileDataForAvatar}
+          onAvatarProviderChange={app.actions.handleAvatarProviderChange}
+          onGeminiApiKeyChange={app.actions.handleGeminiApiKeyChange}
+          onOpenAIApiKeyChange={app.actions.handleOpenAIApiKeyChange}
+          onSaveGeminiApiKey={app.actions.saveGeminiApiKey}
+          onSaveOpenAIApiKey={app.actions.saveOpenAIApiKey}
+          onAvatarPromptChange={app.actions.handleAvatarPromptChange}
+          onAvatarInterviewChange={app.actions.handleAvatarInterviewChange}
+          onBuildAvatarPrompt={app.actions.handleBuildAvatarPromptFromInterview}
+          onGenerateAvatarFromInterview={app.actions.handleGenerateAvatarFromInterview}
+          onGenerateAvatar={app.actions.handleGenerateProfileAvatar}
+        />
+        <MatchesPanel
+          matches={app.matches}
+          selectedMatchId={app.selectedMatchId}
+          onSelectMatch={app.actions.handleSelectMatch}
+          currentSpark={app.currentSpark}
+          sparkAuthor={app.sparkAuthor}
+          sparkInput={app.sparkInput}
+          onSparkInputChange={app.actions.setSparkInput}
+          onNextSpark={app.actions.handleNextSpark}
+          onFindResponders={app.actions.handleSparkFind}
+          sparkResults={app.sparkResults}
+          sparkError={app.sparkError}
+          onStartChat={app.actions.handleSparkStart}
+          responderFilter={app.responderFilter}
+          onFilterChange={app.actions.setResponderFilter}
+          selectedPartner={app.selectedPartner}
+          onReport={app.actions.openReport}
+          onBlock={app.actions.handleBlock}
+          messages={app.messages}
+          profileId={app.profile?.id}
+          chatInput={app.chatInput}
+          onChatInputChange={app.actions.setChatInput}
+          onSendMessage={app.actions.handleSendMessage}
+          currentFlowStage={app.currentFlowStage}
+          currentFlowStageIndex={app.currentFlowStageIndex}
+          flowTotal={app.constants.flowStages.length}
+          onSuggestedReply={app.actions.handleSuggestedReply}
+        />
+        <DatePanel
+          selectedMatch={app.selectedMatch}
+          selectedPartner={app.selectedPartner}
+          selectedStatus={app.selectedStatus}
+          onToggleReady={app.actions.toggleReady}
+          onStartDate={app.actions.startDate}
+          isDateActive={app.helpers.isDateActive}
+          durationMs={app.constants.dateDurationMs}
+        />
+      </main>
+      {modals}
+    </div>
+  );
+}
