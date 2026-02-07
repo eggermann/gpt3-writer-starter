@@ -180,7 +180,7 @@ export function useDatingApp() {
     age_verified: false
   });
   const [avatarSourceProfile, setAvatarSourceProfile] = useState(null);
-  const [avatarProvider, setAvatarProvider] = useState('gemini');
+  const [avatarProvider, setAvatarProvider] = useState('openai');
   const [geminiApiKey, setGeminiApiKey] = useState('');
   const [openaiApiKey, setOpenaiApiKey] = useState('');
   const [avatarPrompt, setAvatarPrompt] = useState('');
@@ -198,6 +198,7 @@ export function useDatingApp() {
   const [responderFilter, setResponderFilter] = useState('mixed');
   const [flowStageByMatch, setFlowStageByMatch] = useState({});
   const [botAutoState, setBotAutoState] = useState({});
+  const avatarType = avatarProvider;
 
   const messagesRef = useRef([]);
   const selectedMatchRef = useRef(null);
@@ -805,13 +806,17 @@ export function useDatingApp() {
   };
 
   const handleAvatarProviderChange = (value) => {
-    const next = value === 'openai' ? 'openai' : 'gemini';
+    const next = value === 'gemini' ? 'gemini' : 'openai';
     setAvatarProvider(next);
     if (typeof window !== 'undefined') {
       window.localStorage.setItem(AVATAR_PROVIDER_STORAGE_KEY, next);
     }
     setAvatarError('');
     setAvatarStatus('');
+  };
+
+  const handleAvatarTypeChange = (value) => {
+    handleAvatarProviderChange(value);
   };
 
   const normalizeAvatarSource = (source) => ({
@@ -927,7 +932,7 @@ export function useDatingApp() {
   };
 
   const handleGenerateProfileAvatar = async (promptOverride = '') => {
-    const provider = avatarProvider === 'openai' ? 'openai' : 'gemini';
+    const provider = avatarType === 'openai' ? 'openai' : 'gemini';
     const providerName = provider === 'openai' ? 'OpenAI' : 'Gemini';
     const storedKey = provider === 'openai' ? openaiApiKey : geminiApiKey;
     let activeApiKey = `${storedKey || ''}`.trim();
@@ -961,6 +966,7 @@ export function useDatingApp() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          type: provider,
           provider,
           apiKey: activeApiKey,
           prompt
@@ -1578,6 +1584,7 @@ export function useDatingApp() {
     authMessage,
     authError,
     profileDraft,
+    avatarType,
     avatarSourceName,
     isUsingExternalAvatarSource,
     avatarProvider,
@@ -1619,6 +1626,7 @@ export function useDatingApp() {
       handleProfileDraft,
       handleProfileSave,
       handleUseProfileDataForAvatar,
+      handleAvatarTypeChange,
       handleAvatarProviderChange,
       handleGeminiApiKeyChange,
       handleOpenAIApiKeyChange,

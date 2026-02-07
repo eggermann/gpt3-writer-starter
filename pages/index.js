@@ -100,6 +100,7 @@ export default function Home() {
           discover={app.discover}
           discoverRatings={app.discoverRatings}
           trackedDiscoverIds={app.trackedDiscoverIds}
+          avatarType={app.avatarType}
           avatarSourceName={app.avatarSourceName}
           isUsingExternalAvatarSource={app.isUsingExternalAvatarSource}
           avatarProvider={app.avatarProvider}
@@ -116,6 +117,7 @@ export default function Home() {
           onRateDiscover={app.actions.rateDiscoverEntry}
           onToggleTrackDiscover={app.actions.toggleTrackDiscover}
           onUseProfileDataForAvatar={app.actions.handleUseProfileDataForAvatar}
+          onAvatarTypeChange={app.actions.handleAvatarTypeChange}
           onAvatarProviderChange={app.actions.handleAvatarProviderChange}
           onGeminiApiKeyChange={app.actions.handleGeminiApiKeyChange}
           onOpenAIApiKeyChange={app.actions.handleOpenAIApiKeyChange}

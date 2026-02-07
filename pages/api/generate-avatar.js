@@ -90,8 +90,8 @@ const generateAvatarAction = async (req, res) => {
     return;
   }
 
-  const { provider, apiKey, prompt, model } = req.body || {};
-  const selectedProvider = provider === 'openai' ? 'openai' : 'gemini';
+  const { type, provider, apiKey, prompt, model } = req.body || {};
+  const selectedProvider = type === 'gemini' || provider === 'gemini' ? 'gemini' : 'openai';
   const trimmedKey = `${apiKey || ''}`.trim();
   const trimmedPrompt = `${prompt || ''}`.trim();
 

@@ -1,13 +1,16 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { DISCOVER_PAGE_SIZE, sortDiscoverEntriesNewestFirst } from '../lib/discoverFeed';
+import styles from './ProfilePanel.module.scss';
 
 const DEFAULT_RATING = { human: 0, bot: 100 };
+const cx = (...classNames) => classNames.filter(Boolean).join(' ');
 
 export default function ProfilePanel({
   profile,
   discover,
   discoverRatings,
   trackedDiscoverIds,
+  avatarType,
   avatarSourceName,
   isUsingExternalAvatarSource,
   avatarProvider,
@@ -24,6 +27,7 @@ export default function ProfilePanel({
   onRateDiscover,
   onToggleTrackDiscover,
   onUseProfileDataForAvatar,
+  onAvatarTypeChange,
   onAvatarProviderChange,
   onGeminiApiKeyChange,
   onOpenAIApiKeyChange,
@@ -65,7 +69,7 @@ export default function ProfilePanel({
   const hasMoreDiscover = prioritizedDiscover.length > visibleCount;
   const getRating = (entryId) => discoverRatings?.[entryId] || DEFAULT_RATING;
   const isTracked = (entryId) => trackedDiscoverIds?.includes(entryId);
-  const selectedProvider = avatarProvider === 'openai' ? 'openai' : 'gemini';
+  const selectedProvider = (avatarType || avatarProvider || 'openai') === 'gemini' ? 'gemini' : 'openai';
   const providerName = selectedProvider === 'openai' ? 'OpenAI' : 'Gemini';
   const keyValue = selectedProvider === 'openai' ? openaiApiKey : geminiApiKey;
   const keyPlaceholder = selectedProvider === 'openai' ? 'sk-proj-...' : 'AIza...';
@@ -111,21 +115,21 @@ export default function ProfilePanel({
   }, [trackedDiscoverIds]);
 
   return (
-    <section className="panel">
-      <div className="panel__header">
+    <section className={styles.panel}>
+      <div className={styles.panelHeader}>
         <h3>Your profile</h3>
         <span className="chip">{profile?.is_bot ? 'Bot' : 'Human'}</span>
       </div>
-      <div className="profile-card">
-        <div className="profile-card__media" style={{ backgroundImage: `url(${profile?.avatar_url})` }} />
-        <div className="profile-card__body">
+      <div className={styles.profileCard}>
+        <div className={styles.profileCardMedia} style={{ backgroundImage: `url(${profile?.avatar_url})` }} />
+        <div className={styles.profileCardBody}>
           <h4>{profile?.display_name}</h4>
           <p className="muted">{profile?.pronouns}</p>
           <p>{profile?.bio}</p>
           {isUsingExternalAvatarSource && (
             <button
               type="button"
-              className="btn ghost avatar-source-btn"
+              className={cx('btn ghost', styles.avatarSourceBtn)}
               onClick={() => onUseProfileDataForAvatar?.(null)}
             >
               Use my profile as source
@@ -133,18 +137,24 @@ export default function ProfilePanel({
           )}
         </div>
       </div>
-      <div className="avatar-lab">
+      <div className={styles.avatarLab}>
         <h4>AI profile image</h4>
-        <p className="muted avatar-lab__hint">Short interview to icon-style prompt to avatar. Key is saved in localStorage.</p>
-        <p className="muted avatar-lab__source">Source profile: {avatarSourceName}</p>
-        <label className="avatar-provider">
+        <p className={cx('muted', styles.avatarHint)}>Short interview to icon-style prompt to avatar. Key is saved in localStorage.</p>
+        <p className={cx('muted', styles.avatarSource)}>Source profile: {avatarSourceName}</p>
+        <label className={styles.avatarProvider}>
           Image provider
-          <select value={selectedProvider} onChange={(event) => onAvatarProviderChange?.(event.target.value)}>
+          <select
+            value={selectedProvider}
+            onChange={(event) => {
+              onAvatarTypeChange?.(event.target.value);
+              onAvatarProviderChange?.(event.target.value);
+            }}
+          >
             <option value="gemini">Gemini</option>
             <option value="openai">OpenAI</option>
           </select>
         </label>
-        <div className="avatar-interview">
+        <div className={styles.avatarInterview}>
           <label>
             Bot style
             <select
@@ -218,7 +228,7 @@ export default function ProfilePanel({
             </select>
           </label>
         </div>
-        <div className="avatar-lab__actions">
+        <div className={styles.avatarActions}>
           <button type="button" className="btn ghost" onClick={() => onBuildAvatarPrompt?.()}>
             Build prompt
           </button>
@@ -253,7 +263,7 @@ export default function ProfilePanel({
             onChange={(event) => onAvatarPromptChange?.(event.target.value)}
           />
         </label>
-        <div className="avatar-lab__actions">
+        <div className={styles.avatarActions}>
           <button
             type="button"
             className="btn ghost"
@@ -269,36 +279,36 @@ export default function ProfilePanel({
         {avatarError && <p className="status status--error">{avatarError}</p>}
       </div>
 
-      <div className="panel__header panel__header--tight">
+      <div className={cx(styles.panelHeader, styles.panelHeaderTight)}>
         <h3>Discover</h3>
-        <button type="button" className="discover-toggle" onClick={() => setIsCollapsed((prev) => !prev)}>
+        <button type="button" className={styles.discoverToggle} onClick={() => setIsCollapsed((prev) => !prev)}>
           {isCollapsed ? 'New entries (expand)' : 'New entries (collapse)'}
         </button>
       </div>
-      <div className={`card-stack discover-list${isCollapsed ? ' is-collapsed' : ''}`} ref={listRef}>
+      <div className={cx(styles.discoverList, isCollapsed && styles.discoverListCollapsed)} ref={listRef}>
         {visibleDiscover.map((item) => (
           <div
-            className={`${isCollapsed ? 'discover-line' : 'match-card'}${animatedIds.includes(item.id) ? ' is-new' : ''}`}
+            className={cx(isCollapsed ? styles.discoverLine : styles.matchCard, animatedIds.includes(item.id) && styles.isNew)}
             key={item.id}
           >
             {!isCollapsed && (
-              <div className="match-card__media" style={{ backgroundImage: `url(${item.avatar_url})` }} />
+              <div className={styles.matchCardMedia} style={{ backgroundImage: `url(${item.avatar_url})` }} />
             )}
-            <div className={isCollapsed ? 'discover-line__body' : 'match-card__body'}>
-              <div className={isCollapsed ? 'discover-line__title' : 'match-card__title'}>
+            <div className={isCollapsed ? styles.discoverLineBody : styles.matchCardBody}>
+              <div className={isCollapsed ? styles.discoverLineTitle : styles.matchCardTitle}>
                 <h4>{item.display_name}</h4>
-                <div className={isCollapsed ? 'discover-line__meta' : 'match-card__meta'}>
-                  <div className="rating-pill" role="group" aria-label={`Rate ${item.display_name}`}>
+                <div className={isCollapsed ? styles.discoverLineMeta : styles.matchCardMeta}>
+                  <div className={styles.ratingPill} role="group" aria-label={`Rate ${item.display_name}`}>
                     <button
                       type="button"
-                      className="rating-pill__side is-human"
+                      className={cx(styles.ratingSide, styles.ratingSideHuman)}
                       onClick={() => onRateDiscover?.(item.id, 'human')}
                     >
                       Human {getRating(item.id).human}%
                     </button>
                     <button
                       type="button"
-                      className="rating-pill__side is-bot"
+                      className={cx(styles.ratingSide, styles.ratingSideBot)}
                       onClick={() => onRateDiscover?.(item.id, 'bot')}
                     >
                       Bot {getRating(item.id).bot}%
@@ -306,7 +316,7 @@ export default function ProfilePanel({
                   </div>
                   <button
                     type="button"
-                    className={`track-lock${isTracked(item.id) ? ' is-tracked' : ''}`}
+                    className={cx(styles.trackLock, isTracked(item.id) && styles.trackLockTracked)}
                     onClick={() => onToggleTrackDiscover?.(item.id)}
                     aria-label={isTracked(item.id) ? `Stop tracking ${item.display_name}` : `Track ${item.display_name}`}
                     title={isTracked(item.id) ? 'Tracking enabled' : 'Track user'}
@@ -319,7 +329,7 @@ export default function ProfilePanel({
                 <>
                   <p className="muted">{item.pronouns}</p>
                   <p>{item.bio}</p>
-                  <div className="match-card__actions">
+                  <div className={styles.matchCardActions}>
                     <button className="btn primary" onClick={() => onFlirt(item)}>
                       Flirt
                     </button>
@@ -341,7 +351,7 @@ export default function ProfilePanel({
         {!prioritizedDiscover.length && <p className="muted">No more profiles. Check back soon.</p>}
       </div>
       {hasMoreDiscover && (
-        <div className="panel__footer">
+        <div className={styles.panelFooter}>
           <button className="btn ghost" onClick={() => setVisibleCount((prev) => prev + DISCOVER_PAGE_SIZE)}>
             More ({prioritizedDiscover.length - visibleCount})
           </button>
